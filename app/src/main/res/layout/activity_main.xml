@@ -62,7 +62,7 @@
          android:layout_alignLeft="@+id/btnledON"
          android:layout_alignStart="@+id/btnledON"
          android:layout_below="@+id/btnDwn"
-         android:text="Control de LED" />
+         android:text="Estado del Coche" />
 
     <Button
         android:layout_width="wrap_content"
@@ -160,10 +160,11 @@
 
     <ImageView
         android:id="@+id/iv_Car"
-        android:layout_width="150dp"
-        android:layout_height="125dp"
-        android:layout_marginLeft="215dp"
-        android:layout_marginBottom="5dp"
+        android:rotation="0"
+        android:layout_width="70dp"
+        android:layout_height="70dp"
+        android:layout_marginLeft="255dp"
+        android:layout_marginBottom="35dp"
         android:layout_alignParentBottom="true"
         android:src="@drawable/rc_car"
         />
