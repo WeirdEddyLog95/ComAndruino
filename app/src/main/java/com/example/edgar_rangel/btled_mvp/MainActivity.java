@@ -5,6 +5,9 @@ import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.Matrix;
 import android.os.Handler;
 import android.os.SystemClock;
 import android.support.v4.app.ActivityCompat;
@@ -72,7 +75,7 @@ public class MainActivity extends AppCompatActivity implements View {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        ((App) getApplication()).getComponent().inject(this);//Al aplicar esto se crashea al inicio de la aplicacion...
+        ((App) getApplication()).getComponent().inject(this);
         //Unir el Bind de los elementos en el activity_main
         ButterKnife.bind(this);
         mBTArrayAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1);
@@ -94,26 +97,15 @@ public class MainActivity extends AppCompatActivity implements View {
                     } catch (UnsupportedEncodingException e) {
                         e.printStackTrace();
                     }
-                    leaBuffer.setText(finalmessage);
-                    if(leaBuffer.getText() == "Auto hacia el Frente"){
-                        vistaCoche.setRotation((float) 90.0);
-                    }
-                    if(leaBuffer.getText() == "Auto hacia la Izquierda"){
-                        vistaCoche.setRotation((float) 180.0);
-                    }
-                    if(leaBuffer.getText() == "Auto hacia la Derecha"){
-                        vistaCoche.setRotation((float) 0.0);
-                    }
-                    if(leaBuffer.getText() == "Auto hacia Atras"){
-                        vistaCoche.setRotation((float) 270.0);
-                    }
+                    String ordenar = finalmessage.replaceAll("[^\\x20-\\x7e]", "");
+                    leaBuffer.setText(ordenar);
                 }
 
                 if (msg.what == CONNECTING_STATUS) {
                     if (msg.arg1 == 1)
-                        BTstatus.setText("Connected to Device: " + (String) (msg.obj));
+                        BTstatus.setText("Conectado to Dispositivo: " + (String) (msg.obj));
                     else
-                        BTstatus.setText("Connection Failed");
+                        BTstatus.setText("Conexion Fallida");
                 }
             }
         };
@@ -128,9 +120,9 @@ public class MainActivity extends AppCompatActivity implements View {
             if (resultCode == RESULT_OK) {
                 //El usuario recogio un contacto
                 //El dato del Intent identifica cual contacto fue seleccionado
-                BTstatus.setText("Enabled");
+                BTstatus.setText("Activado");
             } else
-                BTstatus.setText("Disabled");
+                BTstatus.setText("Desactivado");
         }
     }
 
@@ -138,11 +130,11 @@ public class MainActivity extends AppCompatActivity implements View {
         public void onItemClick(AdapterView<?> av, android.view.View v, int arg2, long arg3) {
 
             if (!mBTAdapter.isEnabled()) {
-                Toast.makeText(getBaseContext(), "Bluetooth not on", Toast.LENGTH_SHORT).show();
+                Toast.makeText(getBaseContext(), "Bluetooth no esta encendido", Toast.LENGTH_SHORT).show();
                 return;
             }
 
-            BTstatus.setText("Connecting...");
+            BTstatus.setText("Conectando...");
             //Se consigue la direccion MAC, que tiene 17 caracteres en la Vista
             String info = ((TextView) v).getText().toString();
             final String address = info.substring(info.length() - 17);
@@ -159,7 +151,7 @@ public class MainActivity extends AppCompatActivity implements View {
                         mBTSocket = createBluetoothSocket(device);
                     } catch (IOException e) {
                         fail = true;
-                        Toast.makeText(getBaseContext(), "Socket creation failed", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(getBaseContext(), "Creacion de Socket Fallido", Toast.LENGTH_SHORT).show();
                     }
                     //Se establece una conexion con el Socket de Bluetooth
                     try {
@@ -172,7 +164,7 @@ public class MainActivity extends AppCompatActivity implements View {
                                     .sendToTarget();
                         } catch (IOException e2) {
                             //Se inserta esta linea para avisar lo siguiente
-                            Toast.makeText(getBaseContext(), "Socket creation failed", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(getBaseContext(), "Creacion de Socket Fallido", Toast.LENGTH_SHORT).show();
                         }
                     }
                     if (fail == false) {
@@ -192,7 +184,7 @@ public class MainActivity extends AppCompatActivity implements View {
             final Method m = device.getClass().getMethod("createInsecureRfcommSocketToServiceRecord", UUID.class);
             return (BluetoothSocket) m.invoke(device, BTMODULEUUID);
         } catch (Exception e) {
-            Log.e(TAG, "Could not create Insecure RFComm Connection", e);
+            Log.e(TAG, "No se pudo crear la Insecure RFComm Connection", e);
         }
         return device.createRfcommSocketToServiceRecord(BTMODULEUUID);
     }
@@ -267,8 +259,8 @@ public class MainActivity extends AppCompatActivity implements View {
     public void writeUp() {
         if (mBTArrayAdapter == null) {
             //Se verifica si el dispositivo no tiene soporte con Bluetooth
-            BTstatus.setText("Status: Bluetooth not found");
-            Toast.makeText(getApplicationContext(), "Bluetooth device not found!", Toast.LENGTH_SHORT).show();
+            BTstatus.setText("Estado: Bluetooth no hallado");
+            Toast.makeText(getApplicationContext(), "Dispositivo Bluetooth no hallado!", Toast.LENGTH_SHORT).show();
         } else {
             if (mConnectedThread != null) //Se revisa primero si hay un hilo de conexion creado antes de enviar los datos
                 mConnectedThread.write("a");
@@ -280,8 +272,8 @@ public class MainActivity extends AppCompatActivity implements View {
     public void writeLeft() {
         if (mBTArrayAdapter == null) {
             //Se verifica si el dispositivo no tiene soporte con Bluetooth
-            BTstatus.setText("Status: Bluetooth not found");
-            Toast.makeText(getApplicationContext(), "Bluetooth device not found!", Toast.LENGTH_SHORT).show();
+            BTstatus.setText("Estado: Bluetooth no hallado");
+            Toast.makeText(getApplicationContext(), "Dispositivo Bluetooth no hallado!", Toast.LENGTH_SHORT).show();
         } else {
             if (mConnectedThread != null) //Se revisa primero si hay un hilo de conexion creado antes de enviar los datos
                 mConnectedThread.write("b");
@@ -293,8 +285,8 @@ public class MainActivity extends AppCompatActivity implements View {
     public void writeRight() {
         if (mBTArrayAdapter == null) {
             //Se verifica si el dispositivo no tiene soporte con Bluetooth
-            BTstatus.setText("Status: Bluetooth not found");
-            Toast.makeText(getApplicationContext(), "Bluetooth device not found!", Toast.LENGTH_SHORT).show();
+            BTstatus.setText("Estado: Bluetooth no hallado");
+            Toast.makeText(getApplicationContext(), "Dispositivo Bluetooth no hallado!", Toast.LENGTH_SHORT).show();
         } else {
             if (mConnectedThread != null) //Se revisa primero si hay un hilo de conexion creado antes de enviar los datos
                 mConnectedThread.write("c");
@@ -306,8 +298,8 @@ public class MainActivity extends AppCompatActivity implements View {
     public void writeDown() {
         if (mBTArrayAdapter == null) {
             //Se verifica si el dispositivo no tiene soporte con Bluetooth
-            BTstatus.setText("Status: Bluetooth not found");
-            Toast.makeText(getApplicationContext(), "Bluetooth device not found!", Toast.LENGTH_SHORT).show();
+            BTstatus.setText("Estado: Bluetooth no hallado");
+            Toast.makeText(getApplicationContext(), "Dispositivo Bluetooth no hallado!", Toast.LENGTH_SHORT).show();
         } else {
             if (mConnectedThread != null) //Se revisa primero si hay un hilo de conexion creado antes de enviar los datos
                 mConnectedThread.write("d");
@@ -319,8 +311,8 @@ public class MainActivity extends AppCompatActivity implements View {
     public void ledON() {
         if (mBTArrayAdapter == null) {
             //Se verifica si el dispositivo no tiene soporte con Bluetooth
-            BTstatus.setText("Status: Bluetooth not found");
-            Toast.makeText(getApplicationContext(), "Bluetooth device not found!", Toast.LENGTH_SHORT).show();
+            BTstatus.setText("Estado: Bluetooth no hallado");
+            Toast.makeText(getApplicationContext(), "Dispositivo Bluetooth no hallado!", Toast.LENGTH_SHORT).show();
         } else {
             if (mConnectedThread != null) //Se revisa primero si hay un hilo de conexion creado antes de enviar los datos
                 mConnectedThread.write("1");
@@ -332,8 +324,8 @@ public class MainActivity extends AppCompatActivity implements View {
     public void ledOFF() {
         if (mBTArrayAdapter == null) {
             //Se verifica si el dispositivo no tiene soporte con Bluetooth
-            BTstatus.setText("Status: Bluetooth not found");
-            Toast.makeText(getApplicationContext(), "Bluetooth device not found!", Toast.LENGTH_SHORT).show();
+            BTstatus.setText("Estado: Bluetooth no hallado");
+            Toast.makeText(getApplicationContext(), "Dispositivo Bluetooth no hallado!", Toast.LENGTH_SHORT).show();
         } else {
             if (mConnectedThread != null) //Se revisa primero si hay un hilo de conexion creado antes de enviar los datos
                 mConnectedThread.write("2");
@@ -345,8 +337,8 @@ public class MainActivity extends AppCompatActivity implements View {
     public void dispoEmparejado() {
         if (mBTArrayAdapter == null) {
             //Se verifica si el dispositivo no tiene soporte con Bluetooth
-            BTstatus.setText("Status: Bluetooth not found");
-            Toast.makeText(getApplicationContext(), "Bluetooth device not found!", Toast.LENGTH_SHORT).show();
+            BTstatus.setText("Estado: Bluetooth no hallado");
+            Toast.makeText(getApplicationContext(), "Dispositivo Bluetooth no hallado!", Toast.LENGTH_SHORT).show();
         } else {
             mPairedDevices = mBTAdapter.getBondedDevices();
             if (mBTAdapter.isEnabled()) {
@@ -354,9 +346,9 @@ public class MainActivity extends AppCompatActivity implements View {
                 for (BluetoothDevice device : mPairedDevices)
                     mBTArrayAdapter.add(device.getName() + "\n" + device.getAddress());
 
-                Toast.makeText(getApplicationContext(), "Show Paired Devices", Toast.LENGTH_SHORT).show();
+                Toast.makeText(getApplicationContext(), "Muestra los dispositivos emparejados", Toast.LENGTH_SHORT).show();
             } else
-                Toast.makeText(getApplicationContext(), "Bluetooth not on", Toast.LENGTH_SHORT).show();
+                Toast.makeText(getApplicationContext(), "Bluetooth no esta encendido", Toast.LENGTH_SHORT).show();
         }
     }
 }
