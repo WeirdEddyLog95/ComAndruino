@@ -1,5 +1,6 @@
 package com.example.edgar_rangel.btled_mvp;
 
+import android.content.Intent;
 import android.widget.ImageView;
 
 /**
@@ -9,5 +10,5 @@ import android.widget.ImageView;
 public interface Presenter {
     /*Que metodos se puede crear para ser implementados y usados en Main_Activity?*/
     void setView(View view);
-    void rotarImagen(String mensaje, ImageView image);
+    void rotaImagen(String RX, ImageView IV);
 }
